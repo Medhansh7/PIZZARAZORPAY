@@ -1,0 +1,21 @@
+{
+  "name": "pizzarazorpay",
+  "version": "1.0.0",
+  "description": "pizza backend for assignmnet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "Medhansh-Chaubey <mc@rapidinnovation.dev>",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "express": "^4.18.2",
+    "nodemon": "^3.0.2",
+    "path": "^0.12.7",
+    "razorpay": "^2.9.2"
+  }
+}
