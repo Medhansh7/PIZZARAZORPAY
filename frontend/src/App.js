@@ -12,7 +12,8 @@ import {
   Button,
   Modal,
 } from "react-bootstrap";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import OrderCard from "./components/OrderCard";
 
 function App() {
   const [Razorpay] = useRazorpay();
@@ -20,24 +21,79 @@ function App() {
   const [sucessTranscation, setSucessTranscation] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [radioValue, setRadioValue] = useState("DELIVERY");
+  const [total, setTotal] = useState(0);
+
+  const [pizzaData, setPizzaData] = useState([]);
+
+  const dummyData = [
+    {
+      category: "Pizza",
+      id: 1,
+      name: "Vesuvius",
+      price: 79,
+      rank: 3,
+      topping: (3)[("Tomat", "Ost", "Skinka")],
+    },
+    {
+      category: "Pizza",
+      id: 2,
+      name: "Margarita A",
+      price: 100,
+      rank: 3,
+      topping: (3)[("Tomat", "Ost", "Skinka")],
+    },
+    {
+      category: "Pizza",
+      id: 3,
+      name: "Margarita B",
+      price: 105,
+      rank: 3,
+      topping: (3)[("Tomat", "Ost", "Skinka")],
+    },
+  ];
 
   const radios = [
     { name: "DELIVERY", value: "DELIVERY" },
     { name: "PICK-UP", value: "PICK-UP" },
   ];
 
+  useEffect(() => {
+    axios
+      .get(
+        "https://private-anon-d48191547a-pizzaapp.apiary-mock.com/restaurants/restaurantId/menu?category=Pizza&orderBy=rank"
+      )
+      .then((res) => {
+        if (res?.status === 200 && res?.data?.length) {
+          setPizzaData(res?.data);
+        }
+      })
+      .catch((err) => {
+        setPizzaData(dummyData);
+        alert("An error occured while fetching the pizzaData!");
+      });
+  }, []);
+
+  useEffect(() => {
+    if (pizzaData?.length) {
+      let total = 0;
+      pizzaData?.map((e) =>
+        e?.category === "Pizza" ? (total = total + e?.price * e?.id) : null
+      );
+      setTotal(total);
+    }
+  }, [pizzaData]);
+
   const createOrder = async () => {
     let responseData = await axios.post("http://localhost:3001/order", {
-      amount: 105865.0,
+      amount: (total + 46.15 + 46.15 - 20) * 100,
     });
-    console.log(responseData, "response Is");
+
     if (responseData?.status === 200) {
       handlePayment(responseData?.data?.id, responseData?.data?.amount);
     }
   };
 
   const handlePayment = (orderID, amount) => {
-    console.log("HandelPayment", orderID);
     const options = {
       key: "rzp_test_OhHe0QHOgBvQHV",
       amount: amount,
@@ -53,12 +109,12 @@ function App() {
         }
       },
       prefill: {
-        name: "Piyush Garg",
-        email: "youremail@example.com",
+        name: "User Name",
+        email: "useremail@example.com",
         contact: "9999999999",
       },
       notes: {
-        address: "Razorpay Corporate Office",
+        address: "Pizza By Medhansh",
       },
       theme: {
         color: "#3399cc",
@@ -139,63 +195,10 @@ function App() {
             <Card.Title style={{ color: "red" }}>+ Add Items</Card.Title>
           </Col>
         </Row>
-        <Row className="my-3">
-          <Col>
-            <Row>
-              <Col md={1} xs={1} sm={1}>
-                <Badge bg="danger">2</Badge>
-              </Col>
-              <Col className="mx-3 d-flex flex-column justify-content-start">
-                <h6>
-                  <em> Margarita A</em>
-                </h6>
-                <Card.Text className="text-muted">crab & cucumber</Card.Text>
-              </Col>
-            </Row>
-          </Col>
-          <Col className="d-flex justify-content-end">
-            <Card.Subtitle>₹ 412.00</Card.Subtitle>
-          </Col>
-        </Row>
-        <Row className="my-3">
-          <Col>
-            <Row>
-              <Col md={1} xs={1} sm={1}>
-                <Badge bg="danger">1</Badge>
-              </Col>
-              <Col className="mx-3 d-flex flex-column justify-content-start">
-                <h6>
-                  <em> Margarita B</em>
-                </h6>
-                <Card.Text className="text-muted">tuna & cucumber</Card.Text>
-              </Col>
-            </Row>
-          </Col>
-          <Col className="d-flex justify-content-end">
-            <Card.Subtitle>₹ 112.00</Card.Subtitle>
-          </Col>
-        </Row>
-        <Row className="my-3">
-          <Col>
-            <Row>
-              <Col md={1} xs={1} sm={1}>
-                <Badge bg="danger">2</Badge>
-              </Col>
-              <Col className="mx-3 d-flex flex-column justify-content-start">
-                <h6>
-                  <em> Margarita C</em>
-                </h6>
-                <Card.Text className="text-muted text-wrap">
-                  smoked salmon over rice with extra sauce to check if this line
-                  works
-                </Card.Text>
-              </Col>
-            </Row>
-          </Col>
-          <Col className="d-flex justify-content-end">
-            <Card.Subtitle>₹ 1236.00</Card.Subtitle>
-          </Col>
-        </Row>
+        {pizzaData?.map(
+          (pizza) => pizza?.category === "Pizza" && <OrderCard data={pizza} />
+        )}
+
         <Row className="mt-5">
           <Col md={3} sm={3} xs={5}>
             <h4 className="border  border-3 border-top-0 border-end-0 border-start-0  border-danger">
@@ -212,7 +215,7 @@ function App() {
             </Row>
           </Col>
           <Col className="d-flex justify-content-end">
-            <Card.Subtitle>₹ 1760.00</Card.Subtitle>
+            <Card.Subtitle>₹ {total}</Card.Subtitle>
           </Col>
           <hr />
         </Row>
@@ -226,7 +229,7 @@ function App() {
             </Row>
           </Col>
           <Col className="d-flex justify-content-end">
-            <Card.Subtitle className="text-primary">-₹759.00</Card.Subtitle>
+            <Card.Subtitle className="text-primary">-₹20.00</Card.Subtitle>
           </Col>
           <hr />
         </Row>
@@ -265,7 +268,7 @@ function App() {
             </Row>
           </Col>
           <Col className="d-flex justify-content-end">
-            <Card.Title>₹1058.65</Card.Title>
+            <Card.Title>₹{total + 46.15 + 46.15 - 20}</Card.Title>
           </Col>
         </Row>
         <Button
