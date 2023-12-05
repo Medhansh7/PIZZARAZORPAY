@@ -136,7 +136,7 @@ function App() {
           <br />
           <Card.Subtitle>Order Id : {sucessTranscation}</Card.Subtitle>
           <br />
-          <Card.Subtitle>Total : ₹1058.65</Card.Subtitle>
+          <Card.Subtitle>Total : ₹{total + 46.15 + 46.15 - 20}</Card.Subtitle>
         </Modal.Body>
 
         <Modal.Footer>
